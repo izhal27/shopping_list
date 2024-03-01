@@ -1,4 +1,4 @@
-import 'package:shopping_list/models/category.dart';
+import 'package:shopping_list/widgets/category.dart';
 
 class GroceryItem {
   const GroceryItem({
