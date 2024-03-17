@@ -6,16 +6,16 @@ final groceryItems = [
   GroceryItem(
       id: 'a',
       name: 'Milk',
-      amount: 1,
+      quantity: 1,
       category: categories[Categories.dairy]!),
   GroceryItem(
       id: 'b',
       name: 'Bananas',
-      amount: 5,
+      quantity: 5,
       category: categories[Categories.fruit]!),
   GroceryItem(
       id: 'c',
       name: 'Beef Steak',
-      amount: 1,
+      quantity: 1,
       category: categories[Categories.meat]!),
 ];

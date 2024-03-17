@@ -1,4 +1,8 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+
 import 'package:shopping_list/data/categories.dart';
 import 'package:shopping_list/models/category.dart';
 import 'package:shopping_list/models/grocery_item.dart';
@@ -16,17 +20,39 @@ class _NewItemState extends State<NewItem> {
   var _enteredAmount = 1;
   var _selectedCategory = categories[Categories.vegetables]!;
 
-  void _saveItem() {
+  void _saveItem() async {
     if (_formKey.currentState!.validate()) {
       _formKey.currentState!.save();
-      Navigator.of(context).pop<GroceryItem>(
-        GroceryItem(
-          id: DateTime.now().toString(),
-          name: _enteredName,
-          amount: _enteredAmount,
-          category: _selectedCategory,
+      final url = Uri.https(
+          'flutter-prep-f63f3-default-rtdb.asia-southeast1.firebasedatabase.app',
+          'grocery-list.json');
+
+      final response = await http.post(
+        url,
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode(
+          {
+            'name': _enteredName,
+            'quantity': _enteredAmount,
+            'category': _selectedCategory.title
+          },
         ),
       );
+
+      if (response.statusCode == 200) {
+        if (!context.mounted) {
+          return;
+        }
+
+        final Map<String, dynamic> addItem = json.decode(response.body);
+
+        Navigator.of(context).pop(GroceryItem(
+          id: addItem['name'],
+          name: _enteredName,
+          quantity: _enteredAmount,
+          category: _selectedCategory,
+        ));
+      }
     }
   }
 
@@ -104,7 +130,7 @@ class _NewItemState extends State<NewItem> {
                                     height: 20,
                                   ),
                                   const SizedBox(width: 8),
-                                  Text(category.value.name),
+                                  Text(category.value.title),
                                 ],
                               ),
                             ),

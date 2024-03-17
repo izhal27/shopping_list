@@ -4,12 +4,12 @@ class GroceryItem {
   const GroceryItem({
     required this.id,
     required this.name,
-    required this.amount,
+    required this.quantity,
     required this.category,
   });
 
   final String id;
   final String name;
-  final int amount;
+  final int quantity;
   final Category category;
 }
