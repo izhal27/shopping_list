@@ -32,7 +32,7 @@ class _GroceryListState extends State<GroceryList> {
         'grocery-list.json');
     final res = await http.get(url);
 
-    if (res.body == 'null') {
+    if (res.statusCode >= 400 || res.body == 'null') {
       setState(() {
         _isLoading = false;
       });
