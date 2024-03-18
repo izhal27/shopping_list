@@ -18,6 +18,7 @@ class GroceryList extends StatefulWidget {
 
 class _GroceryListState extends State<GroceryList> {
   var _groceryItems = <GroceryItem>[];
+  var _isLoading = true;
 
   @override
   void initState() {
@@ -30,7 +31,16 @@ class _GroceryListState extends State<GroceryList> {
         'flutter-prep-f63f3-default-rtdb.asia-southeast1.firebasedatabase.app',
         'grocery-list.json');
     final res = await http.get(url);
+
+    if (res.body == 'null') {
+      setState(() {
+        _isLoading = false;
+      });
+      return;
+    }
+
     final Map<String, dynamic> listData = json.decode(res.body);
+
     final List<GroceryItem> loadedItems = [];
 
     for (final item in listData.entries) {
@@ -49,6 +59,7 @@ class _GroceryListState extends State<GroceryList> {
 
     setState(() {
       _groceryItems = loadedItems;
+      _isLoading = false;
     });
   }
 
@@ -70,12 +81,18 @@ class _GroceryListState extends State<GroceryList> {
 
   @override
   Widget build(BuildContext context) {
-    Widget widget = const Center(
+    Widget content = const Center(
       child: Text("Data masih kosong."),
     );
 
+    if (_isLoading) {
+      content = const Center(
+        child: CircularProgressIndicator(),
+      );
+    }
+
     if (_groceryItems.isNotEmpty) {
-      widget = ListView.builder(
+      content = ListView.builder(
         itemCount: _groceryItems.length,
         itemBuilder: (ctx, index) {
           final item = _groceryItems[index];
@@ -112,7 +129,7 @@ class _GroceryListState extends State<GroceryList> {
           )
         ],
       ),
-      body: widget,
+      body: content,
     );
   }
 }
