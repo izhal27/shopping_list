@@ -19,6 +19,7 @@ class GroceryList extends StatefulWidget {
 class _GroceryListState extends State<GroceryList> {
   var _groceryItems = <GroceryItem>[];
   var _isLoading = true;
+  var _error = "";
 
   @override
   void initState() {
@@ -27,22 +28,30 @@ class _GroceryListState extends State<GroceryList> {
   }
 
   void _loadItems() async {
-    final url = Uri.https(
-        'flutter-prep-f63f3-default-rtdb.asia-southeast1.firebasedatabase.app',
-        'grocery-list.json');
-    final res = await http.get(url);
+    Map<String, dynamic> listData = {};
 
-    if (res.statusCode >= 400 || res.body == 'null') {
+    try {
+      final url = Uri.https(
+          'flutter-prep-f63f3-default-rtdb.asia-southeast1.firebasedatabase.app',
+          'grocery-list.json');
+      final res = await http.get(url);
+      listData = json.decode(res.body);
+
+      if (res.statusCode >= 400 || res.body == 'null') {
+        setState(() {
+          _error = "Terjadi kesalahan dalam mengambil data, coba lagi nanti.";
+          _isLoading = false;
+        });
+        return;
+      }
+    } catch (e) {
       setState(() {
+        _error = "Terjadi kesalahan, coba lagi nanti.";
         _isLoading = false;
       });
-      return;
     }
 
-    final Map<String, dynamic> listData = json.decode(res.body);
-
     final List<GroceryItem> loadedItems = [];
-
     for (final item in listData.entries) {
       final category = categories.entries
           .firstWhere(
@@ -79,6 +88,24 @@ class _GroceryListState extends State<GroceryList> {
     });
   }
 
+  void _removeItem(GroceryItem item) async {
+    final index = _groceryItems.indexOf(item);
+    setState(() {
+      _groceryItems.remove(item);
+    });
+
+    final url = Uri.https(
+        'flutter-prep-f63f3-default-rtdb.asia-southeast1.firebasedatabase.app',
+        'grocery-list.json');
+    final res = await http.delete(url);
+
+    if (res.statusCode >= 400) {
+      setState(() {
+        _groceryItems.insert(index, item);
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     Widget content = const Center(
@@ -101,9 +128,7 @@ class _GroceryListState extends State<GroceryList> {
             direction: DismissDirection.endToStart,
             key: ValueKey(item.id),
             onDismissed: (direction) {
-              setState(() {
-                _groceryItems.remove(item);
-              });
+              _removeItem(item);
             },
             child: ListTile(
               title: Text(item.name),
@@ -116,6 +141,12 @@ class _GroceryListState extends State<GroceryList> {
             ),
           );
         },
+      );
+    }
+
+    if (_error.isNotEmpty) {
+      content = Center(
+        child: Text(_error),
       );
     }
 
